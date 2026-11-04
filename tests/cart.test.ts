@@ -125,3 +125,20 @@ describe('Cart discounts, tax rates and payment', () => {
     expect(session.getOriginalDueMinor()).toBe(2250);
   });
 });
+
+describe('Cart quantity validation', () => {
+  it.each([0, -1, 1.5, NaN])('rejects adding quantity %s', (quantity) => {
+    const cart = new Cart();
+    expect(() => cart.addItem({ id: '1', name: 'Coffee', priceMinor: 450, quantity })).toThrow(
+      'positive integer'
+    );
+    expect(cart.getItems()).toHaveLength(0);
+  });
+
+  it.each([0, -2, 0.5])('rejects removing quantity %s', (quantity) => {
+    const cart = new Cart();
+    cart.addItem({ id: '1', name: 'Coffee', priceMinor: 450, quantity: 3 });
+    expect(() => cart.removeItem('1', quantity)).toThrow('positive integer');
+    expect(cart.getItems()[0].quantity).toBe(3);
+  });
+});

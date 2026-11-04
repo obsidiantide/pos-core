@@ -23,6 +23,10 @@ export class Cart {
     const existing = this.items.get(item.id);
     const quantity = item.quantity ?? 1;
 
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new Error('Item quantity must be a positive integer');
+    }
+
     if (existing) {
       existing.quantity += quantity;
       if (item.taxRateId !== undefined) {
@@ -44,6 +48,10 @@ export class Cart {
    * If quantity is not provided, removes the item completely.
    */
   removeItem(id: string, quantity?: number): void {
+    if (quantity !== undefined && (!Number.isInteger(quantity) || quantity <= 0)) {
+      throw new Error('Removed quantity must be a positive integer');
+    }
+
     const existing = this.items.get(id);
     if (!existing) return;
 
