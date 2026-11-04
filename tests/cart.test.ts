@@ -51,3 +51,77 @@ describe('Cart', () => {
     expect(cart.getTotalMinor()).toBe(0);
   });
 });
+
+describe('Cart discounts, tax rates and payment', () => {
+  let cart: Cart;
+
+  beforeEach(() => {
+    cart = new Cart();
+    cart.addItem({ id: 'a', name: 'Coffee', priceMinor: 1000, quantity: 2 });
+    cart.addItem({ id: 'b', name: 'Tea', priceMinor: 500 });
+  });
+
+  it('drops item-targeted discounts when the item is fully removed', () => {
+    cart.applyDiscount({ id: 'd1', name: 'Coffee promo', type: 'fixed', value: 100, targetItemId: 'a' });
+    cart.applyDiscount({ id: 'd2', name: 'Cart promo', type: 'percentage', value: 10 });
+
+    cart.removeItem('a');
+
+    expect(cart.getDiscounts().map((d) => d.id)).toEqual(['d2']);
+  });
+
+  it('keeps item-targeted discounts on a partial quantity removal', () => {
+    cart.applyDiscount({ id: 'd1', name: 'Coffee promo', type: 'fixed', value: 100, targetItemId: 'a' });
+
+    cart.removeItem('a', 1);
+
+    expect(cart.getDiscounts()).toHaveLength(1);
+    expect(cart.getItems().find((i) => i.id === 'a')?.quantity).toBe(1);
+  });
+
+  it('removes the whole item when the removed quantity is at least the current quantity', () => {
+    cart.removeItem('a', 5);
+    expect(cart.getItems().map((i) => i.id)).toEqual(['b']);
+  });
+
+  it('ignores removal of an unknown item', () => {
+    cart.removeItem('missing');
+    expect(cart.getItems()).toHaveLength(2);
+  });
+
+  it('clear() removes discounts but keeps registered tax rates', () => {
+    cart.addTaxRate({ id: 'vat', name: 'VAT', ratePercent: 18 });
+    cart.applyDiscount({ id: 'd2', name: 'Cart promo', type: 'percentage', value: 10 });
+
+    cart.clear();
+
+    expect(cart.getDiscounts()).toHaveLength(0);
+    expect(cart.getTaxRates()).toHaveLength(1);
+  });
+
+  it('resets the default tax rate when that rate is removed', () => {
+    cart.addTaxRate({ id: 'vat', name: 'VAT', ratePercent: 18 });
+    cart.setDefaultTaxRateId('vat');
+
+    cart.removeTaxRate('vat');
+
+    expect(cart.getDefaultTaxRateId()).toBeUndefined();
+  });
+
+  it('updates the tax rate of an existing item only when one is provided', () => {
+    cart.addItem({ id: 'b', name: 'Tea', priceMinor: 500, taxRateId: 'vat' });
+    cart.addItem({ id: 'b', name: 'Tea', priceMinor: 500 });
+
+    expect(cart.getItems().find((i) => i.id === 'b')?.taxRateId).toBe('vat');
+  });
+
+  it('creates a payment session for the current cart total', () => {
+    cart.applyDiscount({ id: 'd2', name: 'Cart promo', type: 'percentage', value: 10 });
+
+    const session = cart.createPaymentSession();
+
+    expect(cart.getSubtotalMinor()).toBe(2500);
+    expect(session.getOriginalDueMinor()).toBe(cart.getTotalMinor());
+    expect(session.getOriginalDueMinor()).toBe(2250);
+  });
+});
