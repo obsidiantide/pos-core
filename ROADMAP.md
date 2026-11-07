@@ -8,7 +8,7 @@
 
 ## Test Coverage
 - [x] Cart discount cleanup, tax rates, payment session and quantity validation
-- [ ] Property-based tests for `roundCashAmount`
+- [x] Invariant tests for `roundCashAmount` (multiples, idempotence, symmetry)
 - [ ] Tests for mixed inclusive/exclusive tax combined with item discounts
 
 ## Architecture & Refactoring
