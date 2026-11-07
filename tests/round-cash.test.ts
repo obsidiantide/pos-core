@@ -34,8 +34,8 @@ describe('roundCashAmount invariants', () => {
         it('is symmetric around zero', () => {
           for (const amount of amounts) {
             const positive = roundCashAmount(amount, interval, direction);
-            const negative = roundCashAmount(-amount, interval, direction);
-            expect(negative + 0).toBe(-positive + 0);
+            const negative = roundCashAmount(0 - amount, interval, direction);
+            expect(negative).toBe(-positive || 0);
           }
         });
       });
@@ -47,5 +47,11 @@ describe('roundCashAmount invariants', () => {
       expect(roundCashAmount(amount, 5, 'down')).toBeLessThanOrEqual(amount);
       expect(roundCashAmount(amount, 5, 'up')).toBeGreaterThanOrEqual(amount);
     }
+  });
+
+  it('never returns negative zero', () => {
+    expect(Object.is(roundCashAmount(-2, 5), 0)).toBe(true);
+    expect(Object.is(roundCashAmount(-4, 5, 'down'), 0)).toBe(true);
+    expect(Object.is(roundCashAmount(-3, 5, 'nearest'), -5)).toBe(true);
   });
 });

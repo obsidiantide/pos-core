@@ -87,7 +87,8 @@ export function roundCashAmount(
     rounded = Math.round(absAmount / intervalMinor) * intervalMinor;
   }
 
-  return sign * rounded;
+  // `|| 0` avoids returning negative zero for small negative amounts
+  return sign * rounded || 0;
 }
 
 export class PaymentSession {
