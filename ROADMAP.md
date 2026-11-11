@@ -9,7 +9,7 @@
 ## Test Coverage
 - [x] Cart discount cleanup, tax rates, payment session and quantity validation
 - [x] Invariant tests for `roundCashAmount` (multiples, idempotence, symmetry)
-- [ ] Tests for mixed inclusive/exclusive tax combined with item discounts
+- [x] Tests for mixed inclusive/exclusive tax combined with item discounts
 
 ## Architecture & Refactoring
 - [ ] Extract shared minor-unit validation helpers (`assertPositiveInteger`)
