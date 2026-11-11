@@ -1,5 +1,6 @@
 import { Discount, calculateDiscountAmount } from './discount.js';
 import { TaxRate, TaxSummary, TaxLineBreakdown, calculateTaxAmount } from './tax.js';
+import { assertPositiveInteger } from './validation.js';
 import { PaymentSession, PaymentSessionOptions } from './payment.js';
 
 export interface CartItem {
@@ -23,9 +24,7 @@ export class Cart {
     const existing = this.items.get(item.id);
     const quantity = item.quantity ?? 1;
 
-    if (!Number.isInteger(quantity) || quantity <= 0) {
-      throw new Error('Item quantity must be a positive integer');
-    }
+    assertPositiveInteger(quantity, 'Item quantity must be a positive integer');
 
     if (existing) {
       existing.quantity += quantity;
@@ -48,8 +47,8 @@ export class Cart {
    * If quantity is not provided, removes the item completely.
    */
   removeItem(id: string, quantity?: number): void {
-    if (quantity !== undefined && (!Number.isInteger(quantity) || quantity <= 0)) {
-      throw new Error('Removed quantity must be a positive integer');
+    if (quantity !== undefined) {
+      assertPositiveInteger(quantity, 'Removed quantity must be a positive integer');
     }
 
     const existing = this.items.get(id);

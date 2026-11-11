@@ -12,7 +12,7 @@
 - [x] Tests for mixed inclusive/exclusive tax combined with item discounts
 
 ## Architecture & Refactoring
-- [ ] Extract shared minor-unit validation helpers (`assertPositiveInteger`)
+- [x] Extract shared minor-unit validation helpers (`assertPositiveInteger`)
 - [ ] Split `Cart.getTaxSummary` into smaller pure functions
 - [ ] Export a serializable cart snapshot (`toJSON` / `fromJSON`)
 
