@@ -18,4 +18,4 @@
 
 ## Performance & Polish
 - [ ] Ship ESM and CJS builds with type declarations
-- [ ] Document the public API with examples in the README
+- [x] Document the public API with examples in the README (quick start and payment sessions)
