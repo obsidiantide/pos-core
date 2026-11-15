@@ -2,7 +2,7 @@
 
 ## Core Features
 - [ ] Refund / return engine (negative tenders and restocking)
-- [ ] Tip support in `PaymentSession`
+- [x] Tip support in `PaymentSession` (`setTipMinor`, `setTipPercent`)
 - [ ] Buy-X-get-Y discount type
 - [ ] Per-item price override with reason code
 

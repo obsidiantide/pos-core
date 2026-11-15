@@ -29,8 +29,10 @@ export interface PaymentTender {
 }
 
 export interface PaymentSummary {
-  /** Original total due before rounding */
+  /** Original total due before rounding (excludes tip) */
   originalDueMinor: number;
+  /** Tip added on top of the bill in minor units */
+  tipMinor: number;
   /** Effective total due after cash rounding adjustment */
   totalDueMinor: number;
   /** Sum of physical amounts tendered */
@@ -96,6 +98,7 @@ export class PaymentSession {
   private readonly options: PaymentSessionOptions;
   private tenders: Map<string, PaymentTender> = new Map();
   private nextId = 1;
+  private tipMinor = 0;
 
   constructor(totalDueMinor: number, options: PaymentSessionOptions = {}) {
     this.originalDueMinor = Math.max(0, Math.round(totalDueMinor));
@@ -110,9 +113,9 @@ export class PaymentSession {
   }
 
   /**
-   * Returns the effective total due after any applicable cash rounding.
+   * Returns the bill amount after any applicable cash rounding, excluding the tip.
    */
-  getTotalDueMinor(): number {
+  private getRoundedBillMinor(): number {
     if (this.options.cashRounding && this.options.cashRounding.intervalMinor > 1) {
       return roundCashAmount(
         this.originalDueMinor,
@@ -124,10 +127,46 @@ export class PaymentSession {
   }
 
   /**
-   * Returns the rounding adjustment difference in minor units.
+   * Returns the effective total due: the cash-rounded bill plus the tip.
+   */
+  getTotalDueMinor(): number {
+    return this.getRoundedBillMinor() + this.tipMinor;
+  }
+
+  /**
+   * Returns the rounding adjustment difference in minor units (tip is never rounded).
    */
   getCashRoundingAdjustmentMinor(): number {
-    return this.getTotalDueMinor() - this.originalDueMinor;
+    return this.getRoundedBillMinor() - this.originalDueMinor;
+  }
+
+  /**
+   * Returns the current tip in minor units.
+   */
+  getTipMinor(): number {
+    return this.tipMinor;
+  }
+
+  /**
+   * Sets the tip as an absolute amount in minor units. Replaces any previous tip.
+   */
+  setTipMinor(tipMinor: number): void {
+    if (!Number.isInteger(tipMinor) || tipMinor < 0) {
+      throw new Error('Tip must be a non-negative integer amount in minor units');
+    }
+    this.tipMinor = tipMinor;
+  }
+
+  /**
+   * Sets the tip as a percentage of the original (pre-rounding) bill, rounded to the nearest minor unit.
+   * Returns the resulting tip amount.
+   */
+  setTipPercent(percent: number): number {
+    if (!Number.isFinite(percent) || percent < 0) {
+      throw new Error('Tip percent must be a non-negative number');
+    }
+    this.tipMinor = Math.round((this.originalDueMinor * percent) / 100);
+    return this.tipMinor;
   }
 
   /**
@@ -316,6 +355,7 @@ export class PaymentSession {
 
     return {
       originalDueMinor: this.originalDueMinor,
+      tipMinor: this.tipMinor,
       totalDueMinor,
       totalTenderedMinor,
       totalAppliedMinor,
