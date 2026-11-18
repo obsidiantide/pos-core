@@ -14,7 +14,7 @@
 ## Architecture & Refactoring
 - [x] Extract shared minor-unit validation helpers (`assertPositiveInteger`)
 - [ ] Split `Cart.getTaxSummary` into smaller pure functions
-- [ ] Export a serializable cart snapshot (`toJSON` / `fromJSON`)
+- [x] Export a serializable cart snapshot (`toJSON` / `fromJSON`)
 
 ## Performance & Polish
 - [ ] Ship ESM and CJS builds with type declarations

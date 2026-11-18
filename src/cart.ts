@@ -11,6 +11,13 @@ export interface CartItem {
   taxRateId?: string; // Optional tax rate ID specific to this item
 }
 
+export interface CartSnapshot {
+  items: CartItem[];
+  discounts: Discount[];
+  taxRates: TaxRate[];
+  defaultTaxRateId?: string;
+}
+
 export class Cart {
   private items: Map<string, CartItem> = new Map();
   private discounts: Map<string, Discount> = new Map();
@@ -72,6 +79,31 @@ export class Cart {
   clear(): void {
     this.items.clear();
     this.discounts.clear();
+  }
+
+  /**
+   * Returns a plain, JSON-serializable copy of the cart state.
+   */
+  toJSON(): CartSnapshot {
+    return {
+      items: this.getItems().map((item) => ({ ...item })),
+      discounts: this.getDiscounts().map((d) => ({ ...d })),
+      taxRates: this.getTaxRates().map((r) => ({ ...r })),
+      defaultTaxRateId: this.defaultTaxRateId,
+    };
+  }
+
+  /**
+   * Restores a cart from a snapshot produced by `toJSON`.
+   * Item quantities are validated like in `addItem`.
+   */
+  static fromJSON(snapshot: CartSnapshot): Cart {
+    const cart = new Cart();
+    snapshot.taxRates.forEach((rate) => cart.addTaxRate({ ...rate }));
+    cart.setDefaultTaxRateId(snapshot.defaultTaxRateId);
+    snapshot.items.forEach((item) => cart.addItem({ ...item }));
+    snapshot.discounts.forEach((d) => cart.applyDiscount({ ...d }));
+    return cart;
   }
 
   /**
