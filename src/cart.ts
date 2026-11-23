@@ -1,6 +1,6 @@
 import { Discount, calculateDiscountAmount } from './discount.js';
 import { TaxRate, TaxSummary, TaxLineBreakdown, apportionTaxableBase, calculateTaxAmount, summarizeTaxBreakdown } from './tax.js';
-import { assertPositiveInteger } from './validation.js';
+import { assertNonNegativeInteger, assertPositiveInteger } from './validation.js';
 import { PaymentSession, PaymentSessionOptions } from './payment.js';
 
 export interface CartItem {
@@ -32,6 +32,7 @@ export class Cart {
     const quantity = item.quantity ?? 1;
 
     assertPositiveInteger(quantity, 'Item quantity must be a positive integer');
+    assertNonNegativeInteger(item.priceMinor, 'Item price must be a non-negative integer in minor units');
 
     if (existing) {
       existing.quantity += quantity;
