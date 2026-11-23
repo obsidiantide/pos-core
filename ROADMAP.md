@@ -13,7 +13,7 @@
 
 ## Architecture & Refactoring
 - [x] Extract shared minor-unit validation helpers (`assertPositiveInteger`)
-- [ ] Split `Cart.getTaxSummary` into smaller pure functions
+- [x] Split `Cart.getTaxSummary` into smaller pure functions
 - [x] Export a serializable cart snapshot (`toJSON` / `fromJSON`)
 
 ## Performance & Polish

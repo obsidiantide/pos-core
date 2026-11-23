@@ -1,5 +1,5 @@
 import { Discount, calculateDiscountAmount } from './discount.js';
-import { TaxRate, TaxSummary, TaxLineBreakdown, calculateTaxAmount } from './tax.js';
+import { TaxRate, TaxSummary, TaxLineBreakdown, apportionTaxableBase, calculateTaxAmount, summarizeTaxBreakdown } from './tax.js';
 import { assertPositiveInteger } from './validation.js';
 import { PaymentSession, PaymentSessionOptions } from './payment.js';
 
@@ -286,11 +286,11 @@ export class Cart {
         continue;
       }
 
-      let taxableBaseMinor = ctx.netAfterItemDiscountMinor;
-      if (totalNetAfterItemDiscounts > 0 && effectiveCartDiscount > 0) {
-        const ratio = (totalNetAfterItemDiscounts - effectiveCartDiscount) / totalNetAfterItemDiscounts;
-        taxableBaseMinor = Math.round(ctx.netAfterItemDiscountMinor * ratio);
-      }
+      const taxableBaseMinor = apportionTaxableBase(
+        ctx.netAfterItemDiscountMinor,
+        totalNetAfterItemDiscounts,
+        effectiveCartDiscount
+      );
 
       if (taxableBaseMinor <= 0) {
         continue;
@@ -319,26 +319,7 @@ export class Cart {
       }
     }
 
-    const breakdown = Array.from(breakdownMap.values());
-    let totalTaxMinor = 0;
-    let exclusiveTaxMinor = 0;
-    let inclusiveTaxMinor = 0;
-
-    for (const line of breakdown) {
-      totalTaxMinor += line.taxAmountMinor;
-      if (line.isInclusive) {
-        inclusiveTaxMinor += line.taxAmountMinor;
-      } else {
-        exclusiveTaxMinor += line.taxAmountMinor;
-      }
-    }
-
-    return {
-      breakdown,
-      totalTaxMinor,
-      exclusiveTaxMinor,
-      inclusiveTaxMinor,
-    };
+    return summarizeTaxBreakdown(Array.from(breakdownMap.values()));
   }
 
   /**

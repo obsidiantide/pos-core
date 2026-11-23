@@ -48,3 +48,43 @@ export function calculateTaxAmount(
   // Exclusive formula: net * (rate / 100)
   return Math.round((baseAmountMinor * ratePercent) / 100);
 }
+
+/**
+ * Reduces an item's net amount (after item-level discounts) by its proportional
+ * share of the cart-level discount, giving the base on which tax is calculated.
+ *
+ * @param itemNetMinor Item net amount after item-level discounts
+ * @param totalNetMinor Sum of all item net amounts after item-level discounts
+ * @param cartDiscountMinor Total cart-level discount to apportion
+ */
+export function apportionTaxableBase(
+  itemNetMinor: number,
+  totalNetMinor: number,
+  cartDiscountMinor: number
+): number {
+  if (totalNetMinor <= 0 || cartDiscountMinor <= 0) {
+    return itemNetMinor;
+  }
+  const ratio = (totalNetMinor - cartDiscountMinor) / totalNetMinor;
+  return Math.round(itemNetMinor * ratio);
+}
+
+/**
+ * Aggregates per-rate tax lines into a summary with inclusive/exclusive totals.
+ */
+export function summarizeTaxBreakdown(breakdown: TaxLineBreakdown[]): TaxSummary {
+  let totalTaxMinor = 0;
+  let exclusiveTaxMinor = 0;
+  let inclusiveTaxMinor = 0;
+
+  for (const line of breakdown) {
+    totalTaxMinor += line.taxAmountMinor;
+    if (line.isInclusive) {
+      inclusiveTaxMinor += line.taxAmountMinor;
+    } else {
+      exclusiveTaxMinor += line.taxAmountMinor;
+    }
+  }
+
+  return { breakdown, totalTaxMinor, exclusiveTaxMinor, inclusiveTaxMinor };
+}
