@@ -116,8 +116,19 @@ export class Cart {
 
   /**
    * Adds or updates a discount on the cart.
+   * Throws if the value is negative or not finite, a percentage exceeds 100,
+   * or `maxDiscountMinor` is not a non-negative integer.
    */
   applyDiscount(discount: Discount): void {
+    if (!Number.isFinite(discount.value) || discount.value < 0) {
+      throw new Error('Discount value must be a non-negative number');
+    }
+    if (discount.type === 'percentage' && discount.value > 100) {
+      throw new Error('Percentage discount cannot exceed 100');
+    }
+    if (discount.maxDiscountMinor !== undefined) {
+      assertNonNegativeInteger(discount.maxDiscountMinor, 'Discount cap must be a non-negative integer in minor units');
+    }
     this.discounts.set(discount.id, discount);
   }
 
