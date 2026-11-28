@@ -1,3 +1,5 @@
+import { assertNonNegativeInteger, assertPositiveInteger } from './validation.js';
+
 export type DiscountType = 'percentage' | 'fixed';
 
 export interface Discount {
@@ -35,4 +37,30 @@ export function calculateDiscountAmount(
   }
 
   return Math.min(baseAmountMinor, Math.max(0, calculated));
+}
+
+/**
+ * Calculates a "buy X, get Y free" discount in minor units.
+ *
+ * Items are grouped into bundles of `buyQty + getQty`; every complete bundle
+ * makes `getQty` units free. A trailing partial bundle only gets free units
+ * once the `buyQty` paid units are covered (e.g. buy 2 get 1: 5 units -> 1 free,
+ * 3 units -> 1 free, 2 units -> 0 free).
+ */
+export function calculateBuyXGetYDiscount(
+  unitPriceMinor: number,
+  quantity: number,
+  buyQty: number,
+  getQty: number
+): number {
+  assertNonNegativeInteger(unitPriceMinor, 'Unit price must be a non-negative integer in minor units');
+  assertNonNegativeInteger(quantity, 'Quantity must be a non-negative integer');
+  assertPositiveInteger(buyQty, 'Buy quantity must be a positive integer');
+  assertPositiveInteger(getQty, 'Get quantity must be a positive integer');
+
+  const bundleSize = buyQty + getQty;
+  const fullBundles = Math.floor(quantity / bundleSize);
+  const remainder = quantity % bundleSize;
+  const freeInRemainder = Math.max(0, remainder - buyQty);
+  return (fullBundles * getQty + freeInRemainder) * unitPriceMinor;
 }
