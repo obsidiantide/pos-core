@@ -42,3 +42,15 @@ session.getSummary().status; // 'paid'
 - Cash tenders compute change; non-cash tenders cannot exceed the balance unless `allowNonCashOverpayment` is set.
 - `cashRounding` rounds the bill to the given interval (`nearest`, `up` or `down`); the adjustment is reported in `cashRoundingAdjustmentMinor`.
 - Tips (`setTipMinor` / `setTipPercent`) are added on top of the rounded bill and are never rounded.
+
+### Discounts
+- `percentage` discounts take a value from 0 to 100 and may be capped with `maxDiscountMinor`; `fixed` discounts take an amount in minor units.
+- Set `targetItemId` to apply a discount to a single line; item discounts are applied first, cart-level discounts then apply to the remaining balance.
+- `calculateBuyXGetYDiscount(unitPriceMinor, quantity, buyQty, getQty)` returns the value of the free units for a "buy X, get Y free" promotion:
+
+```ts
+import { calculateBuyXGetYDiscount } from '@mister-robot-cat/pos-core';
+
+calculateBuyXGetYDiscount(500, 3, 2, 1); // 500 - buy 2, the third is free
+calculateBuyXGetYDiscount(500, 5, 2, 1); // 500 - one complete bundle, the partial one pays in full
+```
